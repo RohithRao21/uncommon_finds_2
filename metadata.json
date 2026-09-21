@@ -1,0 +1,6 @@
+{
+  "name": "Uncommon Finds — Minimalist Everyday Objects",
+  "description": "A minimalist store for well-made everyday objects, lighter sleeves, desk architecture, and curated tools.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

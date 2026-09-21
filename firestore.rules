@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        request.auth.token.role == 'admin'
+      );
+    }
+
+    // User profile document
+    match /users/{userId} {
+      allow read, write: if true; // Allow user profile updates and role switches
+
+      // Cart subcollection
+      match /cart/{itemId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Wishlist subcollection
+      match /wishlist/{itemId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Addresses subcollection
+      match /addresses/{addressId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Orders collection
+    match /orders/{orderId} {
+      allow read, create, update, delete: if true; // Allow order placement, tracking, and admin updates
+    }
+
+    // Products collection (public read, write for stock management)
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if true; // Allows product seeding, editing, and stock updates
+    }
+  }
+}
