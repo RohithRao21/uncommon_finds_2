@@ -56,8 +56,8 @@ import p1Red5 from '../assets/images/p1/RED/p1-red-5.png';
 import p1White1 from '../assets/images/p1/WHITE/p1-white-1.png';
 import p1White2 from '../assets/images/p1/WHITE/p1-white-2.png';
 import p1White3 from '../assets/images/p1/WHITE/p1-white-3.png';
-import p1White4 from '../assets/images/p1/WHITE/P1-WHITE-4.png';
-import p1White5 from '../assets/images/p1/WHITE/P1-WHITE-5.png';
+import p1White4 from '../assets/images/p1/WHITE/p1-white-4.png';
+import p1White5 from '../assets/images/p1/WHITE/p1-white-5.png';
 
 import p1Yellow1 from '../assets/images/p1/YELLOW/p1-yellow-1.png';
 import p1Yellow2 from '../assets/images/p1/YELLOW/p1-yellow-2.png';
