@@ -45,7 +45,13 @@ export function normalizeProduct(id: string, data: any): Product {
     (dId.includes('prism') && p.id === 'prism-lighter-sleeve') ||
     (dSlug.includes('prism') && p.id === 'prism-lighter-sleeve') ||
     (dId.includes('p3') && p.id === 'prism-lighter-sleeve') ||
-    (dSlug.includes('p3') && p.id === 'prism-lighter-sleeve')
+    (dSlug.includes('p3') && p.id === 'prism-lighter-sleeve') ||
+    (dName.includes('soap') && p.id === 'soap-bar-lighter-sleeve') ||
+    (dName.includes('fight club') && p.id === 'soap-bar-lighter-sleeve') ||
+    (dId.includes('soap') && p.id === 'soap-bar-lighter-sleeve') ||
+    (dSlug.includes('soap') && p.id === 'soap-bar-lighter-sleeve') ||
+    (dId.includes('p4') && p.id === 'soap-bar-lighter-sleeve') ||
+    (dSlug.includes('p4') && p.id === 'soap-bar-lighter-sleeve')
   );
 
   // If this product matches one of our local catalog products, enforce local bundled images!
@@ -178,7 +184,9 @@ export async function getProductsFromFirestore(): Promise<Product[]> {
                      Array.from(dbDocsMap.values()).find((d: any) => 
                        (d?.name && d.name.toLowerCase() === localProd.name.toLowerCase()) ||
                        (localProd.name.toLowerCase().includes('meridian') && (d?.name?.toLowerCase().includes('meridian') || d?.slug?.includes('meridian') || d?.slug?.includes('honeycomb'))) ||
-                       (localProd.name.toLowerCase().includes('ripple') && (d?.name?.toLowerCase().includes('ripple') || d?.slug?.includes('ripple') || d?.slug?.includes('rubble')))
+                       (localProd.name.toLowerCase().includes('ripple') && (d?.name?.toLowerCase().includes('ripple') || d?.slug?.includes('ripple') || d?.slug?.includes('rubble'))) ||
+                       (localProd.name.toLowerCase().includes('prism') && (d?.name?.toLowerCase().includes('prism') || d?.slug?.includes('prism') || d?.id?.includes('prism') || d?.slug?.includes('p3'))) ||
+                       (localProd.name.toLowerCase().includes('soap') && (d?.name?.toLowerCase().includes('soap') || d?.slug?.includes('soap') || d?.name?.toLowerCase().includes('fight club') || d?.slug?.includes('p4')))
                      );
 
       if (dbData) {

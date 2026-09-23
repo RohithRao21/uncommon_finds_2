@@ -187,6 +187,13 @@ import p3Yellow3 from '../assets/images/p3/YELLOW/p3-yellow-3.png';
 import p3Yellow4 from '../assets/images/p3/YELLOW/p3-yellow-4.png';
 import p3Yellow5 from '../assets/images/p3/YELLOW/p3-yellow-5.png';
 
+// P4 SOAP BAR / FIGHT CLUB IMAGES
+import p4Pink1 from '../assets/images/p4/PINK/p4-pink-1.png';
+import p4Pink2 from '../assets/images/p4/PINK/p4-pink-2.png';
+import p4Pink3 from '../assets/images/p4/PINK/p4-pink-3.png';
+import p4Pink4 from '../assets/images/p4/PINK/p4-pink-4.png';
+import p4Pink5 from '../assets/images/p4/PINK/p4-pink-5.png';
+
 export const MATERIAL_DETAILS: Record<string, {
   name: string;
   tagline: string;
@@ -575,5 +582,56 @@ export const PRODUCTS: Product[] = [
     ],
     inStock: true,
     stockCount: 167
+  },
+  {
+    id: 'soap-bar-lighter-sleeve',
+    slug: 'soap-bar-lighter-sleeve',
+    name: 'Soap Bar',
+    tagline: 'Iconic embossed soap-bar silhouette lighter case with water-resistant grip',
+    category: 'lighter' as CategoryType,
+    price: 299,
+    rating: 5.0,
+    reviewCount: 42,
+    image: p4Pink1,
+    secondaryImage: p4Pink2,
+    galleryImages: [
+      p4Pink1,
+      p4Pink2,
+      p4Pink3,
+      p4Pink4,
+      p4Pink5
+    ],
+    description: 'An iconic lighter armor sleeve sculpted in the form of the cult classic pink soap bar. Features bold embossed typography, smooth rounded bar-of-soap contours, and an engineered friction-fit inner cavity that secures standard lighters. (Note: Lighter is not included).',
+    storyHeading: 'Cult Classic Soap Bar Silhouette',
+    storyBody: 'Inspired by the minimalist, irreverent aesthetic of cult cinema. Precision-molded with high-tactile matte pink polymer, offering an instantly recognizable silhouette that sits flush on countertops and vanity trays while slipping comfortably into pockets.',
+    isNew: true,
+    isBestseller: true,
+    specs: {
+      layerHeight: '0.08 mm',
+      infillType: 'High-Density Structural Matrix',
+      printTime: '2.4 Hours',
+      weight: '24g',
+      nozzleSize: '0.4mm Diamond-Coated',
+      durabilityRating: 'Impact Resistant Tactile Polymer',
+      hardwareIncluded: 'Precision Friction Fit Retention'
+    },
+    colors: [
+      {
+        name: 'Blush Pink',
+        stock: 30,
+        hexColor: '#ff8fb1',
+        images: [p4Pink1, p4Pink2, p4Pink3, p4Pink4, p4Pink5]
+      }
+    ],
+    availableMaterials: [
+      { id: 'PINK', name: 'Bar Soap Pink', hexColor: '#ff8fb1', textureName: 'Silky Matte Finish', priceModifier: 0, image: p4Pink1, galleryImages: [p4Pink1, p4Pink2, p4Pink3, p4Pink4, p4Pink5] }
+    ],
+    explodedComponents: [
+      { id: 's1', name: 'Embossed Outer Shell', description: 'Sculpted soap bar exterior featuring high-relief debossed lettering and chamfered edges.', material: 'Silky Touch Polymer', offsetY: -25 },
+      { id: 's2', name: 'Internal Retention Chamber', description: 'Precision-toleranced cavity engineered to hold standard BIC lighters securely.', material: 'High-Toughness PETG', offsetY: 0 },
+      { id: 's3', name: 'Weighted Flat Base', description: 'Sturdy flat base allowing the sleeve to stand upright on bathroom sinks, desks, and vanity trays.', material: 'Reinforced Polymer', offsetY: 25 }
+    ],
+    inStock: true,
+    stockCount: 30
   }
 ];
