@@ -36,6 +36,9 @@ export interface Product {
   storyBody?: string;
   isNew?: boolean;
   isBestseller?: boolean;
+  isSpecialEdition?: boolean;
+  specialEditionLabel?: string;
+  specialEditionReference?: string;
   specs?: {
     layerHeight: string;
     infillType: string;

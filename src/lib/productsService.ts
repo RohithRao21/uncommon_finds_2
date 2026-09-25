@@ -85,6 +85,9 @@ export function normalizeProduct(id: string, data: any): Product {
       storyBody: data?.storyBody || builtIn.storyBody,
       isNew: data?.isNew !== undefined ? data.isNew : builtIn.isNew,
       isBestseller: data?.isBestseller !== undefined ? data.isBestseller : builtIn.isBestseller,
+      isSpecialEdition: data?.isSpecialEdition !== undefined ? data.isSpecialEdition : builtIn.isSpecialEdition,
+      specialEditionLabel: data?.specialEditionLabel || builtIn.specialEditionLabel,
+      specialEditionReference: data?.specialEditionReference || builtIn.specialEditionReference,
       specs: data?.specs || builtIn.specs,
       availableMaterials: builtIn.availableMaterials,
       // CRITICAL: ALWAYS use the local bundled images

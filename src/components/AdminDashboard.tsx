@@ -879,6 +879,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 BESTSELLER
                               </span>
                             )}
+                            {(prod.isSpecialEdition || prod.id === 'soap-bar-lighter-sleeve' || prod.slug?.includes('soap')) && (
+                              <span className="px-2 py-0.5 bg-rose-600 text-white font-bold text-[10px] uppercase rounded">
+                                SPECIAL EDITION • FIGHT CLUB
+                              </span>
+                            )}
                           </div>
 
                           <div className="absolute top-3 right-3">

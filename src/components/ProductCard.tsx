@@ -68,9 +68,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Square Product Image Stage */}
       <div className="relative aspect-square w-full overflow-hidden bg-[#e5e5e7] mb-3">
-        {/* Top-Left Number Badge (01, 02, etc.) */}
-        <div className="absolute top-2.5 left-2.5 z-10 px-2 py-1 bg-[#1c1c1e] text-[#f2f2f7] text-[10px] font-bold font-mono tracking-wider">
-          {formattedIndex}
+        {/* Top-Left Number Badge & Special Edition Marking */}
+        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1">
+          <div className="px-2 py-1 bg-[#1c1c1e] text-[#f2f2f7] text-[10px] font-bold font-mono tracking-wider">
+            {formattedIndex}
+          </div>
+          {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
+            <div className="px-2 py-0.5 bg-rose-600 text-white text-[9px] font-extrabold font-mono tracking-wider uppercase shadow-md flex items-center gap-1 border border-pink-300/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              SPECIAL EDITION
+            </div>
+          )}
         </div>
 
         {/* Wishlist Heart Icon Button (Top-Right) */}
@@ -119,11 +127,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
       {/* Product Name & Price Row */}
       <div className="flex items-center justify-between text-sm sm:text-base font-bold font-mono-tech pt-1">
-        <span className={`transition-colors tracking-tight ${
-          isDarkMode ? 'text-[#ffffff] group-hover:text-[#a1a1a6]' : 'text-slate-900 group-hover:text-slate-600'
-        }`}>
-          {product.name}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className={`transition-colors tracking-tight ${
+            isDarkMode ? 'text-[#ffffff] group-hover:text-[#a1a1a6]' : 'text-slate-900 group-hover:text-slate-600'
+          }`}>
+            {product.name}
+          </span>
+          {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
+            <span className="text-[9px] font-mono font-bold tracking-wider px-1.5 py-0.5 bg-rose-500/15 text-rose-400 border border-rose-500/30 uppercase">
+              FIGHT CLUB
+            </span>
+          )}
+        </div>
         <div className={`tracking-tight font-extrabold ml-4 shrink-0 ${
           isDarkMode ? 'text-[#ffffff]' : 'text-slate-900'
         }`}>
@@ -133,6 +148,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           />
         </div>
       </div>
+
+      {/* Fight Club Special Edition Micro Reference */}
+      {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
+        <div className="flex items-center gap-1 text-[10px] font-mono tracking-wider text-rose-400/90 pt-0.5">
+          <span className="text-rose-500">★</span>
+          <span>{product.specialEditionReference || 'FIGHT CLUB (1999) • PAPER STREET SOAP CO.'}</span>
+        </div>
+      )}
     </div>
   );
 };

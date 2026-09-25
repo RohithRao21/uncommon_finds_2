@@ -159,9 +159,17 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
 
+                  {/* Special Edition Badge */}
+                  {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug?.includes('soap')) && (
+                    <div className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-rose-600 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-md flex items-center gap-1 border border-pink-300/40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      SPECIAL EDITION
+                    </div>
+                  )}
+
                   {/* Out of Stock Badge */}
                   {isOutOfStock && (
-                    <div className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md">
+                    <div className="absolute bottom-2.5 left-2.5 z-10 px-2 py-0.5 bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md">
                       OUT OF STOCK
                     </div>
                   )}

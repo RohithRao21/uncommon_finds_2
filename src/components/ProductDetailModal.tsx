@@ -211,6 +211,31 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 }`}>
                   {product.name}
                 </h1>
+
+                {/* Special Edition Marking Banner for Fight Club reference */}
+                {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
+                  <div className={`p-4 border rounded-none transition-colors ${
+                    isDarkMode 
+                      ? 'bg-rose-950/20 border-rose-500/40 text-rose-200' 
+                      : 'bg-rose-50 border-rose-300 text-rose-950'
+                  }`}>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-[10px] font-black font-mono uppercase tracking-widest px-2 py-0.5 bg-rose-600 text-white flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                        SPECIAL EDITION
+                      </span>
+                      <span className="text-[10px] font-mono tracking-widest uppercase font-bold text-rose-400">
+                        REF: FIGHT CLUB (1999)
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono font-medium leading-relaxed">
+                      <span className="font-bold uppercase tracking-wider text-rose-300">Paper Street Soap Co. Edition</span> — Sculpted in homage to Tyler Durden's iconic pink soap bar from the 1999 cult classic film.
+                    </div>
+                    <div className="mt-2 text-[10px] font-mono opacity-80 italic border-t border-rose-500/20 pt-1.5">
+                      "The first rule of Fight Club is: you do not talk about Fight Club."
+                    </div>
+                  </div>
+                )}
                 
                 <div className="text-[11px] font-mono-tech uppercase tracking-widest pt-1 flex items-center gap-2">
                   {isOutOfStock ? (
