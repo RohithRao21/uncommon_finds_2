@@ -68,17 +68,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       {/* Square Product Image Stage */}
       <div className="relative aspect-square w-full overflow-hidden bg-[#e5e5e7] mb-3">
-        {/* Top-Left Number Badge & Special Edition Marking */}
-        <div className="absolute top-2.5 left-2.5 z-10 flex flex-col items-start gap-1">
+        {/* Top-Left Number Badge */}
+        <div className="absolute top-2.5 left-2.5 z-10">
           <div className="px-2 py-1 bg-[#1c1c1e] text-[#f2f2f7] text-[10px] font-bold font-mono tracking-wider">
             {formattedIndex}
           </div>
-          {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
-            <div className="px-2 py-0.5 bg-rose-600 text-white text-[9px] font-extrabold font-mono tracking-wider uppercase shadow-md flex items-center gap-1 border border-pink-300/40">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              SPECIAL EDITION
-            </div>
-          )}
         </div>
 
         {/* Wishlist Heart Icon Button (Top-Right) */}
@@ -135,7 +129,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </span>
           {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
             <span className="text-[9px] font-mono font-bold tracking-wider px-1.5 py-0.5 bg-rose-500/15 text-rose-400 border border-rose-500/30 uppercase">
-              FIGHT CLUB
+              SPECIAL EDITION
             </span>
           )}
         </div>

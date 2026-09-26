@@ -159,14 +159,6 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
 
-                  {/* Special Edition Badge */}
-                  {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug?.includes('soap')) && (
-                    <div className="absolute top-2.5 left-2.5 z-10 px-2 py-0.5 bg-rose-600 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-md flex items-center gap-1 border border-pink-300/40">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                      SPECIAL EDITION
-                    </div>
-                  )}
-
                   {/* Out of Stock Badge */}
                   {isOutOfStock && (
                     <div className="absolute bottom-2.5 left-2.5 z-10 px-2 py-0.5 bg-red-600 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md">
@@ -197,9 +189,16 @@ export const WishlistPage: React.FC<WishlistPageProps> = ({
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
                       {product.category}
                     </div>
-                    <h3 className="font-bold text-sm tracking-tight mb-2 truncate">
-                      {product.name}
-                    </h3>
+                    <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                      <h3 className="font-bold text-sm tracking-tight truncate">
+                        {product.name}
+                      </h3>
+                      {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug?.includes('soap')) && (
+                        <span className="text-[9px] font-mono font-bold tracking-wider px-1.5 py-0.5 bg-rose-500/15 text-rose-400 border border-rose-500/30 uppercase">
+                          SPECIAL EDITION
+                        </span>
+                      )}
+                    </div>
                     <div className="font-bold text-sm mb-4">
                       <PriceDisplay amount={product.price} />
                     </div>

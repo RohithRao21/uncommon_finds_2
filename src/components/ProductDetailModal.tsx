@@ -1,10 +1,86 @@
-import React, { useState, useEffect } from 'react';
-import { X, ArrowLeft, CheckCircle2, ShoppingBag, Heart, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, ArrowLeft, CheckCircle2, ShoppingBag, Heart, AlertCircle, Loader2 } from 'lucide-react';
 import { Product, MaterialType } from '../types';
 import { PriceDisplay } from './PriceDisplay';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { PRODUCTS } from '../data/products';
+
+interface GalleryImageItemProps {
+  src: string;
+  alt: string;
+  index: number;
+  colorName: string;
+  isColorSwitching: boolean;
+  isDarkMode: boolean;
+}
+
+const GalleryImageItem: React.FC<GalleryImageItemProps> = ({
+  src,
+  alt,
+  index,
+  colorName,
+  isColorSwitching,
+  isDarkMode,
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(false);
+    const img = new Image();
+    img.src = src;
+    if (img.complete) {
+      setIsLoaded(true);
+    } else {
+      img.onload = () => setIsLoaded(true);
+      img.onerror = () => setIsLoaded(true);
+    }
+  }, [src]);
+
+  const showLoader = isColorSwitching || !isLoaded;
+
+  return (
+    <div 
+      className={`relative aspect-square w-full overflow-hidden border transition-colors duration-300 ${
+        isDarkMode ? 'bg-[#0b0b0e] border-[#1c1c1e]' : 'bg-slate-100 border-slate-200'
+      }`}
+    >
+      {/* Loading Skeleton & Spinner Overlay */}
+      {showLoader && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+          <div className="relative flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+            <Loader2 className="w-5 h-5 text-white animate-spin absolute" />
+          </div>
+          <div className="flex flex-col items-center gap-1 text-center px-4">
+            <span className="text-[11px] font-mono uppercase tracking-widest font-bold text-white drop-shadow">
+              LOADING {colorName}
+            </span>
+            <span className="text-[9px] font-mono text-white/70 tracking-wider">
+              ASSET 0{index + 1} / 05
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Main Image with smooth fade-in */}
+      <img
+        src={src}
+        alt={alt}
+        loading="eager"
+        onLoad={() => setIsLoaded(true)}
+        className={`w-full h-full object-cover object-center transition-all duration-500 ease-out ${
+          showLoader ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-none'
+        }`}
+      />
+
+      {/* View index badge */}
+      <div className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black/65 backdrop-blur-md text-[9px] font-mono text-white/80 border border-white/10 uppercase tracking-widest pointer-events-none">
+        0{index + 1}
+      </div>
+    </div>
+  );
+};
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -48,6 +124,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     : [];
 
   const [selectedColorName, setSelectedColorName] = useState<string>('Default');
+  const [isColorSwitching, setIsColorSwitching] = useState<boolean>(false);
+  const switchingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Sync when product changes
   useEffect(() => {
@@ -56,8 +134,30 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         ? product.colors
         : (product.availableMaterials || []).map(m => ({ name: m.name }));
       setSelectedColorName(initialColors[0]?.name || 'Default');
+      setIsColorSwitching(false);
     }
   }, [product?.id]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (switchingTimeoutRef.current) clearTimeout(switchingTimeoutRef.current);
+    };
+  }, []);
+
+  const handleColorSelect = (newColorName: string) => {
+    if (newColorName === selectedColorName) return;
+    setIsColorSwitching(true);
+    setSelectedColorName(newColorName);
+    setQuantity(1);
+
+    if (switchingTimeoutRef.current) {
+      clearTimeout(switchingTimeoutRef.current);
+    }
+    switchingTimeoutRef.current = setTimeout(() => {
+      setIsColorSwitching(false);
+    }, 400);
+  };
 
   const [quantity, setQuantity] = useState<number>(1);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -175,19 +275,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {/* LEFT COLUMN: Vertical Gallery Stack */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-6">
             {imagesToRender.map((img, idx) => (
-              <div 
-                key={idx} 
-                className={`relative aspect-square w-full overflow-hidden border ${
-                  isDarkMode ? 'bg-[#0a0a0c] border-[#1c1c1e]' : 'bg-slate-100 border-slate-200'
-                }`}
-              >
-                <img
-                  src={img}
-                  alt={`${product.name} - ${selectedColor?.name || 'View'} ${idx + 1}`}
-                  loading="lazy"
-                  className="w-full h-full object-cover object-center"
-                />
-              </div>
+              <GalleryImageItem
+                key={`${selectedColorName}-${idx}`}
+                src={img}
+                alt={`${product.name} - ${selectedColor?.name || 'View'} ${idx + 1}`}
+                index={idx}
+                colorName={selectedColor?.name || 'Colorway'}
+                isColorSwitching={isColorSwitching}
+                isDarkMode={isDarkMode}
+              />
             ))}
           </div>
 
@@ -206,11 +302,18 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </span>
                 </div>
 
-                <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight uppercase font-mono-tech leading-tight ${
-                  isDarkMode ? 'text-white' : 'text-slate-900'
-                }`}>
-                  {product.name}
-                </h1>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight uppercase font-mono-tech leading-tight ${
+                    isDarkMode ? 'text-white' : 'text-slate-900'
+                  }`}>
+                    {product.name}
+                  </h1>
+                  {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
+                    <span className="text-[10px] font-mono font-bold tracking-wider px-2 py-0.5 bg-rose-500/15 text-rose-400 border border-rose-500/30 uppercase">
+                      SPECIAL EDITION
+                    </span>
+                  )}
+                </div>
 
                 {/* Special Edition Marking Banner for Fight Club reference */}
                 {(product.isSpecialEdition || product.id === 'soap-bar-lighter-sleeve' || product.slug.includes('soap')) && (
@@ -284,10 +387,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       <button
                         key={col.name}
                         type="button"
-                        onClick={() => {
-                          setSelectedColorName(col.name);
-                          setQuantity(1);
-                        }}
+                        onClick={() => handleColorSelect(col.name)}
                         className={`flex items-center gap-2.5 px-3.5 py-2 border text-xs font-mono-tech uppercase font-bold tracking-wider cursor-pointer transition-all relative ${
                           colOutOfStock ? 'opacity-60' : ''
                         } ${
@@ -300,10 +400,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                                 : 'bg-slate-100 text-slate-800 border-slate-200 hover:border-slate-900')
                         }`}
                       >
-                        <span 
-                          className="w-3 h-3 rounded-full border border-black/30 shrink-0 inline-block shadow-sm"
-                          style={{ backgroundColor: col.hexColor || '#333333' }}
-                        />
+                        {isSelected && isColorSwitching ? (
+                          <Loader2 className="w-3 h-3 animate-spin shrink-0 text-current" />
+                        ) : (
+                          <span 
+                            className="w-3 h-3 rounded-full border border-black/30 shrink-0 inline-block shadow-sm"
+                            style={{ backgroundColor: col.hexColor || '#333333' }}
+                          />
+                        )}
                         <span>{col.name}</span>
                         {colOutOfStock && (
                           <span className="text-[9px] px-1 bg-red-600/80 text-white rounded">
