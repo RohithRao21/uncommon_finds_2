@@ -4,7 +4,7 @@ import { MaterialType, CartItem, Product } from '../types';
 import { PriceDisplay } from './PriceDisplay';
 import { formatINR, formatUSD } from '../utils/currency';
 import { useCart } from '../context/CartContext';
-import defaultCustomImage from '../assets/images/p1/BLACK/p1-black-1.png';
+import defaultCustomImage from '../assets/images/P1/BLACK/p1-black-1.png';
 
 interface CustomPrintStudioProps {
   isOpen: boolean;

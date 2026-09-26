@@ -18,7 +18,7 @@ import {
 import { db, collection, getDocs, doc, setDoc, updateDoc } from '../lib/firebase';
 import { PriceDisplay } from './PriceDisplay';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
-import defaultProductImage from '../assets/images/p1/BLACK/p1-black-1.png';
+import defaultProductImage from '../assets/images/P1/BLACK/p1-black-1.png';
 
 interface AdminDashboardProps {
   onBackToShop: () => void;
