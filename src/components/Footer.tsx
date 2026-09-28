@@ -1,4 +1,5 @@
 import React from 'react';
+import { UFLogo } from './UFLogo';
 
 interface FooterProps {
   onOpenCustomStudio: () => void;
@@ -23,11 +24,21 @@ export const Footer: React.FC<FooterProps> = ({ isDarkMode, onNavigateShop, onNa
           <div className="md:col-span-6 space-y-3">
             <button 
               onClick={onNavigateShop} 
-              className={`text-2xl font-bold tracking-widest uppercase text-left transition-colors cursor-pointer ${
-                isDarkMode ? 'text-white hover:text-[#a1a1a6]' : 'text-slate-900 hover:text-slate-600'
-              }`}
+              className="flex items-center gap-3 text-left transition-colors cursor-pointer group"
             >
-              UF .
+              <UFLogo size={28} />
+              <div className="flex flex-col justify-center leading-none">
+                <span className={`font-bold text-xs tracking-widest uppercase transition-colors ${
+                  isDarkMode ? 'text-white group-hover:text-slate-300' : 'text-slate-900 group-hover:text-slate-600'
+                }`}>
+                  The Uncommon
+                </span>
+                <span className={`font-bold text-xs tracking-widest uppercase transition-colors mt-0.5 ${
+                  isDarkMode ? 'text-white group-hover:text-slate-300' : 'text-slate-900 group-hover:text-slate-600'
+                }`}>
+                  Finds
+                </span>
+              </div>
             </button>
             <p className={`text-xs font-sans-clean leading-relaxed max-w-sm ${
               isDarkMode ? 'text-[#8e8e93]' : 'text-slate-600'

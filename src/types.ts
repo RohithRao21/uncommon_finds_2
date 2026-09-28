@@ -153,6 +153,14 @@ export interface Order {
   };
   paymentMethod?: string;
   jobId?: string;
+  shiprocketOrderId?: string;
+  shiprocketShipmentId?: string;
+  awbNumber?: string;
+  courierName?: string;
+  courierTrackingUrl?: string;
+  shippingLabelUrl?: string;
+  manifestUrl?: string;
+  pickupScheduledDate?: string;
 }
 
 

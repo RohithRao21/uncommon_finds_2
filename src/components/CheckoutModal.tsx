@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, ShieldCheck, Cpu, CreditCard, Truck, ArrowRight, Printer, Sparkles, RefreshCw, MapPin, Plus, Star, Phone } from 'lucide-react';
+import { 
+  X, Check, ShieldCheck, Cpu, CreditCard, Truck, ArrowRight, Printer, Sparkles, 
+  RefreshCw, MapPin, Plus, Star, Phone, Zap, CheckCircle2, Box, Loader2, AlertCircle 
+} from 'lucide-react';
 import { CartItem, Address } from '../types';
 import { PriceDisplay } from './PriceDisplay';
 import { formatINR, formatUSD } from '../utils/currency';
@@ -7,6 +10,7 @@ import { User, db, collection, addDoc, serverTimestamp } from '../lib/firebase';
 import { useCart } from '../context/CartContext';
 import { useAddress } from '../context/AddressContext';
 import { AddressFormModal } from './AddressFormModal';
+import { openRazorpayCheckout, getRazorpayKeyId, getRazorpayMode } from '../lib/razorpay';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -129,42 +133,96 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [jobId, setJobId] = useState('');
   const [simulatedLayer, setSimulatedLayer] = useState(12);
 
+  const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay');
+  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+  const [paymentError, setPaymentError] = useState<string>('');
+
   if (!isOpen) return null;
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price || item.unitPrice || 0) * item.quantity, 0);
   const total = Math.max(0, subtotal - discountAmount);
 
   const handleCompleteOrder = async () => {
+    setPaymentError('');
+    setIsProcessingPayment(true);
+
     const generatedJobId = `JOB-X1C-${Math.floor(1000 + Math.random() * 9000)}`;
+    const generatedOrderNumber = `UF-${Math.floor(100000 + Math.random() * 900000)}`;
     setJobId(generatedJobId);
 
-    // Save order to Firestore
-    try {
-      await addDoc(collection(db, 'orders'), {
-        userId: currentUser?.uid || 'guest',
-        userEmail: formData.email,
-        userName: formData.name,
-        items: cartItems.map(item => ({
-          name: item.productName || item.product?.name || '3D Print Component',
-          quantity: item.quantity,
-          unitPrice: item.price || item.unitPrice || 0,
-          selectedMaterial: item.selectedColor || item.selectedMaterial || 'Default',
-        })),
-        totalINR: total,
-        status: 'DISPATCHED',
-        createdAt: new Date().toISOString(),
-        shippingAddress: {
-          address: formData.address,
-          city: formData.city,
-          zip: formData.zip,
-        }
-      });
-    } catch (err) {
-      console.error('Failed to record order to Firestore:', err);
+    const saveOrderToDatabase = async (paymentStatus: string, razorpayPaymentId?: string) => {
+      try {
+        await addDoc(collection(db, 'orders'), {
+          orderNumber: generatedOrderNumber,
+          userId: currentUser?.uid || 'guest',
+          userEmail: formData.email,
+          userName: formData.name,
+          userPhone: formData.phone,
+          items: cartItems.map(item => ({
+            name: item.productName || item.product?.name || '3D Print Component',
+            quantity: item.quantity,
+            unitPrice: item.price || item.unitPrice || 0,
+            selectedMaterial: item.selectedColor || item.selectedMaterial || 'Default',
+          })),
+          subtotal,
+          total,
+          totalINR: total,
+          status: 'DISPATCHED',
+          orderStatus: 'Confirmed',
+          paymentStatus,
+          paymentMethod,
+          razorpayPaymentId: razorpayPaymentId || null,
+          jobId: generatedJobId,
+          createdAt: new Date().toISOString(),
+          shippingAddress: {
+            fullName: formData.name,
+            phone: formData.phone,
+            address: formData.address,
+            addressLine2: formData.addressLine2 || '',
+            city: formData.city,
+            state: formData.state,
+            zip: formData.zip,
+            country: formData.country,
+          }
+        });
+      } catch (err) {
+        console.error('Failed to record order to Firestore:', err);
+      }
+      setIsProcessingPayment(false);
+      setStep('confirmation');
+      clearCart();
+    };
+
+    if (paymentMethod === 'cod') {
+      await saveOrderToDatabase('Pending (COD)');
+      return;
     }
 
-    setStep('confirmation');
-    clearCart();
+    // Razorpay Online Gateway
+    try {
+      await openRazorpayCheckout({
+        amountINR: total,
+        orderNumber: generatedOrderNumber,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        description: `Order ${generatedOrderNumber} - Precision 3D Printed Artifacts`,
+        onSuccess: async (response) => {
+          await saveOrderToDatabase('Paid (Razorpay)', response.razorpay_payment_id);
+        },
+        onFailure: (err) => {
+          console.error('Razorpay Payment Failed:', err);
+          setPaymentError(err?.description || 'Payment was unsuccessful or cancelled. Please try again.');
+          setIsProcessingPayment(false);
+        },
+        onDismiss: () => {
+          setIsProcessingPayment(false);
+        }
+      });
+    } catch (e: any) {
+      setPaymentError(e?.message || 'Error initializing Razorpay gateway.');
+      setIsProcessingPayment(false);
+    }
   };
 
   return (
@@ -396,6 +454,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                       />
                     </div>
                   </div>
+
+                  {formData.zip && formData.zip.length === 6 && (
+                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center justify-between animate-fadeIn">
+                      <div className="flex items-center gap-2">
+                        <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Shiprocket Express: Serviceable by Blue Dart & Delhivery</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-300 uppercase">
+                        2-4 Days
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -427,56 +497,78 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           )}
 
-          {/* STEP 2: Payment Simulation */}
+          {/* STEP 2: Payment Method */}
           {step === 'payment' && (
             <div className="space-y-4">
-              <h3 className={`font-display font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
-                Payment Method
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className={`font-display font-bold text-lg ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                  Payment Method
+                </h3>
+                {getRazorpayKeyId() ? (
+                  <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>RAZORPAY LIVE</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-bold">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>RAZORPAY READY</span>
+                  </span>
+                )}
+              </div>
+
+              {paymentError && (
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-mono text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{paymentError}</span>
+                </div>
+              )}
               
-              <div className={`p-4 rounded-xl border space-y-3 font-mono-tech text-xs ${
-                isDarkMode ? 'bg-black/40 border-white/15' : 'bg-slate-50 border-slate-200'
-              }`}>
-                <div className={`flex items-center justify-between ${isDarkMode ? 'text-white' : 'text-slate-900 font-bold'}`}>
-                  <span className="font-bold">CREDIT CARD / APPLE PAY / UPI</span>
-                  <CreditCard className="w-4 h-4" />
+              <div className="space-y-3 font-mono-tech text-xs">
+                {/* Razorpay Online Payment Option */}
+                <div
+                  onClick={() => setPaymentMethod('razorpay')}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                    paymentMethod === 'razorpay'
+                      ? 'border-red-500 bg-red-500/10 text-white shadow-md'
+                      : isDarkMode
+                      ? 'bg-black/40 border-white/10 text-slate-400 hover:border-white/25'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-bold flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-red-400" />
+                      <span>RAZORPAY (UPI, GPAY, CARDS, NETBANKING)</span>
+                    </span>
+                    {paymentMethod === 'razorpay' && <CheckCircle2 className="w-4 h-4 text-red-500" />}
+                  </div>
+                  <p className={`text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Fast & secure checkout via UPI QR, Google Pay, PhonePe, Paytm, Credit/Debit cards & NetBanking.
+                  </p>
                 </div>
 
-                <div>
-                  <label className={`block mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>CARD NUMBER</label>
-                  <input
-                    type="text"
-                    value={formData.cardNumber}
-                    onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
-                    className={`w-full px-3 py-2 rounded-xl border outline-none transition-colors ${
-                      isDarkMode 
-                        ? 'bg-black/60 border-white/15 text-white focus:border-slate-400' 
-                        : 'bg-white border-slate-300 text-slate-900 focus:border-slate-900'
-                    }`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={`block mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>EXPIRY</label>
-                    <input
-                      type="text"
-                      defaultValue="12/28"
-                      className={`w-full px-3 py-2 rounded-xl border outline-none ${
-                        isDarkMode ? 'bg-black/60 border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    />
+                {/* Cash on Delivery Option */}
+                <div
+                  onClick={() => setPaymentMethod('cod')}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                    paymentMethod === 'cod'
+                      ? 'border-red-500 bg-red-500/10 text-white shadow-md'
+                      : isDarkMode
+                      ? 'bg-black/40 border-white/10 text-slate-400 hover:border-white/25'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-bold flex items-center gap-2">
+                      <Box className="w-4 h-4 text-amber-400" />
+                      <span>CASH ON DELIVERY (COD)</span>
+                    </span>
+                    {paymentMethod === 'cod' && <CheckCircle2 className="w-4 h-4 text-red-500" />}
                   </div>
-                  <div>
-                    <label className={`block mb-1 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>CVC</label>
-                    <input
-                      type="text"
-                      defaultValue="888"
-                      className={`w-full px-3 py-2 rounded-xl border outline-none ${
-                        isDarkMode ? 'bg-black/60 border-white/15 text-white' : 'bg-white border-slate-300 text-slate-900'
-                      }`}
-                    />
-                  </div>
+                  <p className={`text-[11px] ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Pay in cash or UPI directly to the delivery partner upon arrival.
+                  </p>
                 </div>
               </div>
 
@@ -492,6 +584,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
               <div className="pt-2 flex justify-between items-center">
                 <button
+                  type="button"
+                  disabled={isProcessingPayment}
                   onClick={() => setStep('details')}
                   className={`px-4 py-2.5 rounded-xl border font-mono-tech text-xs cursor-pointer ${
                     isDarkMode ? 'border-white/20 text-slate-300 hover:text-white' : 'border-slate-300 text-slate-700 hover:text-black'
@@ -500,13 +594,33 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                   BACK
                 </button>
                 <button
+                  type="button"
+                  disabled={isProcessingPayment}
                   onClick={handleCompleteOrder}
                   className={`px-6 py-3 rounded-xl font-mono-tech font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-xl ridge-button ${
-                    isDarkMode ? 'bg-white text-black hover:bg-slate-200' : 'bg-slate-900 text-white hover:bg-black'
+                    isProcessingPayment
+                      ? 'bg-slate-700 text-slate-300 cursor-not-allowed'
+                      : isDarkMode 
+                      ? 'bg-white text-black hover:bg-slate-200' 
+                      : 'bg-slate-900 text-white hover:bg-black'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4" />
-                  <span>AUTHORIZE & DISPATCH PRINT ({formatINR(total)} / ~{formatUSD(total)})</span>
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>INITIALIZING GATEWAY...</span>
+                    </>
+                  ) : paymentMethod === 'razorpay' ? (
+                    <>
+                      <Sparkles className="w-4 h-4 text-red-500" />
+                      <span>PAY VIA RAZORPAY ({formatINR(total)})</span>
+                    </>
+                  ) : (
+                    <>
+                      <Box className="w-4 h-4 text-amber-400" />
+                      <span>CONFIRM ORDER (COD) ({formatINR(total)})</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

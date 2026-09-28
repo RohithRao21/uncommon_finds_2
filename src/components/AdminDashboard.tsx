@@ -4,7 +4,7 @@ import {
   Package, Plus, Edit2, Trash2, CheckCircle2, Clock, Search, Filter, 
   ArrowUpRight, ChevronRight, Eye, RefreshCw, AlertTriangle, Box, 
   Sparkles, X, Lock, Unlock, DollarSign, ArrowLeft, Check, Layers,
-  BarChart2, FileText, ChevronDown, Award
+  BarChart2, FileText, ChevronDown, Award, CreditCard, Truck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Product, ProductColor, CategoryType } from '../types';
@@ -18,6 +18,8 @@ import {
 import { db, collection, getDocs, doc, setDoc, updateDoc } from '../lib/firebase';
 import { PriceDisplay } from './PriceDisplay';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
+import { RazorpayGatewaySettings } from './RazorpayGatewaySettings';
+import { ShiprocketLogisticsHub } from './ShiprocketLogisticsHub';
 import defaultProductImage from '../assets/images/P1/BLACK/p1-black-1.png';
 
 interface AdminDashboardProps {
@@ -57,6 +59,11 @@ export interface AdminOrder {
   paymentStatus: string;
   orderStatus: string;
   jobId?: string;
+  awbNumber?: string;
+  courierName?: string;
+  courierTrackingUrl?: string;
+  shippingLabelUrl?: string;
+  manifestUrl?: string;
   createdAt: any;
 }
 
@@ -68,7 +75,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const { currentUser, userProfile, updateUserRole, loginAsDemoUser } = useAuth();
 
   // Navigation sub-tabs
-  const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'overview' | 'orders' | 'products'>('analytics');
+  const [activeAdminTab, setActiveAdminTab] = useState<'analytics' | 'overview' | 'orders' | 'products' | 'payments' | 'shipping'>('analytics');
 
   // Passcode gate for demo switch
   const [passcode, setPasscode] = useState('');
@@ -140,6 +147,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             paymentStatus: data.paymentStatus || 'Paid',
             orderStatus: data.orderStatus || data.status || 'Pending',
             jobId: data.jobId || 'JOB-3D-998',
+            awbNumber: data.awbNumber || null,
+            courierName: data.courierName || null,
+            courierTrackingUrl: data.courierTrackingUrl || null,
+            shippingLabelUrl: data.shippingLabelUrl || null,
+            manifestUrl: data.manifestUrl || null,
             createdAt: data.createdAt,
           });
         });
@@ -449,6 +461,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             >
               <Box className="w-4 h-4" />
               <span>PRODUCTS ({products.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveAdminTab('payments')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'payments'
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>RAZORPAY GATEWAY</span>
+            </button>
+
+            <button
+              onClick={() => setActiveAdminTab('shipping')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'shipping'
+                  ? 'bg-red-600 text-white shadow-lg shadow-red-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Truck className="w-4 h-4" />
+              <span>SHIPROCKET ({orders.filter(o => !o.awbNumber).length})</span>
             </button>
           </div>
         </div>
@@ -966,6 +1002,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   })}
                 </div>
               </div>
+            )}
+
+            {/* TAB 4: RAZORPAY PAYMENT GATEWAY SETTINGS */}
+            {activeAdminTab === 'payments' && (
+              <RazorpayGatewaySettings isDarkMode={isDarkMode} />
+            )}
+
+            {/* TAB 5: SHIPROCKET LOGISTICS HUB */}
+            {activeAdminTab === 'shipping' && (
+              <ShiprocketLogisticsHub
+                orders={orders}
+                onOrderUpdated={() => setRefreshKey(k => k + 1)}
+                isDarkMode={isDarkMode}
+              />
             )}
           </>
         )}

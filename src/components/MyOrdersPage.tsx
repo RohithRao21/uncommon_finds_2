@@ -18,7 +18,8 @@ import {
   FileText,
   CreditCard,
   Copy,
-  Check
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -27,6 +28,7 @@ import { db, collection, query, where, getDocs, orderBy, doc, getDoc } from '../
 import { Order, OrderItem } from '../types';
 import { PriceDisplay } from './PriceDisplay';
 import { ProductionTracker } from './ProductionTracker';
+import { ShiprocketTrackerModal } from './ShiprocketTrackerModal';
 
 interface MyOrdersPageProps {
   onBackToShop: () => void;
@@ -51,6 +53,7 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
   // Order Details Modal
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [copiedOrderNum, setCopiedOrderNum] = useState(false);
+  const [activeTrackingAwb, setActiveTrackingAwb] = useState<string | null>(null);
   
   // Guest Lookup State
   const [lookupOrderNum, setLookupOrderNum] = useState('');
@@ -101,6 +104,12 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
             deliveryMethod: data.deliveryMethod,
             paymentMethod: data.paymentMethod,
             jobId: data.jobId,
+            shiprocketOrderId: data.shiprocketOrderId,
+            shiprocketShipmentId: data.shiprocketShipmentId,
+            awbNumber: data.awbNumber,
+            courierName: data.courierName,
+            courierTrackingUrl: data.courierTrackingUrl,
+            shippingLabelUrl: data.shippingLabelUrl,
           };
         });
 
@@ -166,6 +175,12 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
           deliveryMethod: data.deliveryMethod,
           paymentMethod: data.paymentMethod,
           jobId: data.jobId,
+          shiprocketOrderId: data.shiprocketOrderId,
+          shiprocketShipmentId: data.shiprocketShipmentId,
+          awbNumber: data.awbNumber,
+          courierName: data.courierName,
+          courierTrackingUrl: data.courierTrackingUrl,
+          shippingLabelUrl: data.shippingLabelUrl,
         };
 
         setSelectedOrder(foundOrder);
@@ -203,6 +218,12 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
             deliveryMethod: data.deliveryMethod,
             paymentMethod: data.paymentMethod,
             jobId: data.jobId,
+            shiprocketOrderId: data.shiprocketOrderId,
+            shiprocketShipmentId: data.shiprocketShipmentId,
+            awbNumber: data.awbNumber,
+            courierName: data.courierName,
+            courierTrackingUrl: data.courierTrackingUrl,
+            shippingLabelUrl: data.shippingLabelUrl,
           };
           setSelectedOrder(foundOrder);
           setLookupOrderNum('');
@@ -659,6 +680,46 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
               </button>
             </div>
 
+            {/* Live Shiprocket AWB Tracking Card */}
+            {selectedOrder.awbNumber && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-orange-500/10 to-transparent border border-red-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-red-400 font-bold block">
+                      SHIPROCKET COURIER TRACKING
+                    </span>
+                    <p className="text-sm font-bold text-white">
+                      {selectedOrder.courierName || 'Blue Dart Express'} • AWB: {selectedOrder.awbNumber}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTrackingAwb(selectedOrder.awbNumber!)}
+                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold transition-all shadow-md shadow-red-600/20 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>TRACK LIVE</span>
+                  </button>
+
+                  <a
+                    href={selectedOrder.courierTrackingUrl || `https://shiprocket.co/tracking/${selectedOrder.awbNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-2 rounded-xl border border-white/10 hover:bg-white/5 text-slate-300 hover:text-white transition-colors"
+                    title="Open on Shiprocket.co"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Manufacturing Pipeline & Production Progress */}
             <ProductionTracker
               currentStatus={selectedOrder.orderStatus}
@@ -827,6 +888,18 @@ export const MyOrdersPage: React.FC<MyOrdersPageProps> = ({
 
           </div>
         </div>
+      )}
+
+      {/* Shiprocket Tracker Modal */}
+      {activeTrackingAwb && (
+        <ShiprocketTrackerModal
+          isOpen={!!activeTrackingAwb}
+          onClose={() => setActiveTrackingAwb(null)}
+          awbNumber={activeTrackingAwb}
+          orderNumber={selectedOrder?.orderNumber}
+          orderDate={selectedOrder?.createdAt}
+          isDarkMode={isDarkMode}
+        />
       )}
 
     </div>

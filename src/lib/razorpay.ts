@@ -56,15 +56,64 @@ export const loadRazorpayScript = (): Promise<boolean> => {
   });
 };
 
+const LOCAL_STORAGE_KEY = 'voxelform_razorpay_key_id';
+
 /**
- * Retrieves the Razorpay Key ID from environment configuration
+ * Retrieves the Razorpay Key ID from local storage or environment configuration
  */
 export const getRazorpayKeyId = (): string | undefined => {
+  if (typeof window !== 'undefined') {
+    const localKey = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (localKey && localKey.trim().length > 0 && !localKey.includes('MY_') && !localKey.includes('YOUR_')) {
+      return localKey.trim();
+    }
+  }
+
   const envKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
   if (envKey && envKey.trim().length > 0 && !envKey.includes('MY_') && !envKey.includes('YOUR_')) {
     return envKey.trim();
   }
   return undefined;
+};
+
+/**
+ * Sets the Razorpay Key ID in local storage for instant runtime activation
+ */
+export const setStoredRazorpayKeyId = (key: string): void => {
+  if (typeof window !== 'undefined') {
+    if (key.trim()) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, key.trim());
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+    }
+  }
+};
+
+/**
+ * Clears any locally stored Razorpay Key ID
+ */
+export const clearStoredRazorpayKeyId = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  }
+};
+
+/**
+ * Checks if a real Razorpay Key is configured
+ */
+export const isRazorpayKeyConfigured = (): boolean => {
+  return !!getRazorpayKeyId();
+};
+
+/**
+ * Returns current Razorpay mode: 'live', 'test', or 'simulated'
+ */
+export const getRazorpayMode = (): 'live' | 'test' | 'simulated' => {
+  const key = getRazorpayKeyId();
+  if (!key) return 'simulated';
+  if (key.startsWith('rzp_live_')) return 'live';
+  if (key.startsWith('rzp_test_')) return 'test';
+  return 'test';
 };
 
 /**

@@ -856,6 +856,19 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({
                             />
                           </div>
                         </div>
+
+                        {/* Shiprocket Serviceability Badge */}
+                        {formData.zip && formData.zip.length === 6 && (
+                          <div className="p-3.5 rounded-xl bg-gradient-to-r from-red-500/10 via-emerald-500/10 to-transparent border border-emerald-500/30 text-emerald-400 font-mono text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-fadeIn">
+                            <div className="flex items-center gap-2">
+                              <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <span>Shiprocket Express: Serviceable by Blue Dart & Delhivery Air</span>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded shrink-0">
+                              ⚡ Est. 2-4 Days Delivery
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
 

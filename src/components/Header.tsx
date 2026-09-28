@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
     }`}>
       <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between font-mono-tech">
         
-        {/* Logo: Uncommon Finds */}
+        {/* Logo: The Uncommon Finds */}
         <button 
           onClick={() => {
             onSelectTab('shop');
@@ -69,15 +69,15 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center gap-3 group text-left cursor-pointer"
         >
           <UFLogo size={32} />
-          <div className="flex items-center gap-1.5">
-            <span className={`font-bold text-sm tracking-widest uppercase transition-colors ${
+          <div className="flex flex-col justify-center leading-none">
+            <span className={`font-bold text-xs sm:text-[13px] tracking-widest uppercase transition-colors ${
               isDarkMode 
                 ? 'text-[#f2f2f7] group-hover:text-white' 
                 : 'text-slate-900 group-hover:text-black'
             }`}>
-              Uncommon
+              The Uncommon
             </span>
-            <span className={`font-bold text-sm tracking-widest uppercase transition-colors ${
+            <span className={`font-bold text-xs sm:text-[13px] tracking-widest uppercase transition-colors mt-1 ${
               isDarkMode 
                 ? 'text-[#f2f2f7] group-hover:text-white' 
                 : 'text-slate-900 group-hover:text-black'
